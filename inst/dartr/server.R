@@ -19,6 +19,7 @@ shinyServer(function(input, output) {
                 value <- NULL
                 n <- 1
                 MZ <- NULL
+                group <- NULL
                 for(i in input$filedart2$datapath){
                     file <- unzip(i)
                     re <- xcms::xcmsRaw(file[1],profstep = as.numeric(input$step))
@@ -41,11 +42,12 @@ shinyServer(function(input, output) {
                     }
                     value <- value[apply(value, 1, function(x) !all(x==0)),]
                     value <- value[apply(value, 1, function(x) all(x>=10^(input$insdart))),]
-                    colnames(value) <- c(cvalue,rep(input$filedart2$name[n],length(file)))
+                    colnames(value) <- c(cvalue,sub('.mzXML','',basename(file)))
+                    group <- c(group,rep(sub('.zip','',input$filedart2$name[n]),length(file)))
                     n <- n+1
                     MZ <- as.numeric(rownames(value))
                 }
-                return(value)
+                return(list(group = group, data = value))
             }else{
                 re <- xcms::xcmsRaw(input$filedart2$datapath[1],profstep = as.numeric(input$step))
                 MZ <- xcms::profMz(re)
@@ -62,8 +64,9 @@ shinyServer(function(input, output) {
                 }
                 value <- value[apply(value, 1, function(x) !all(x==0)),]
                 value <- value[apply(value, 1, function(x) all(x>=10^(input$insdart))),]
-                colnames(value) <- input$filedart2$name
-                return(value)
+                colnames(value) <- sub('.mzXML','',input$filedart2$name)
+                group <- gsub('([0-9]|_)','',colnames(value))
+                return(list(group = group, data = value))
             }
         }else{
             return(NULL)
@@ -71,20 +74,23 @@ shinyServer(function(input, output) {
     })
     # show the table
     output$darttable <- DT::renderDataTable({
-        dartfilter()
+        list <- dartfilter()
+        rbind(list$group,list$data)
     })
     # show PCA
     output$dartpca <- renderPlot({
-        if (is.null(input$filedart$datapath)){
+        if (is.null(input$filedart2$datapath)){
             return()
         }else{
-            data <- dartfilter()
-            enviGCMS::plotpca(data = data,lv = as.character(colnames(data)))
+            list <- dartfilter()
+            enviGCMS::plotpca(data = list$data,lv = as.character(list$group), col = as.numeric(as.factor(list$group)))
         }
     })
     # show the download
     output$datadart = downloadHandler('dart-filtered.csv', content = function(file) {
-        write.csv(dartfilter(), file)
+        list <- dartfilter()
+        df <- rbind(list$group,list$data)
+        write.csv(df, file)
     })
 
 
