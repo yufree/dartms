@@ -1,0 +1,28 @@
+Package: dartms
+Type: Package
+Title: Direct Analysis in Real Time (DART) Mass Spectrometry Data Analysis
+Version: 0.1.0
+Date: 2018-05-20
+Authors@R: person(given = "Miao", family = "YU",
+        role = c("aut", "cre"), 
+        email = "yufreecas@gmail.com",
+        comment = c(ORCID = "0000-0002-2804-6014"))
+Maintainer: Miao YU <yufreecas@gmail.com>
+Description: This package is designed for Direct Analysis in Real Time (DART)  Mass Spectrometry Data Analysis with a 'shiny' application.
+URL: https://yufree.github.io/dartms
+BugReports: https://github.com/yufree/dartms/issues
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Suggests: knitr,
+    enviGCMS
+VignetteBuilder: knitr
+biocViews: 
+Depends: R (>= 2.10)
+Imports: RColorBrewer,
+        shiny,
+        rmarkdown,
+        DT,
+        xcms
+RoxygenNote: 6.0.1
+
