@@ -1,8 +1,10 @@
+options(shiny.maxRequestSize=2048*1024^2)
 # This is the server logic for a Shiny web application.
 # You can find out more about building applications with Shiny here:
 #
 # http://shiny.rstudio.com
 # You might need the develop version of enviGCMS to run this app. Try `devtools::install_github('yufree/enviGCMS')`
+#
 library(shiny)
 library(xcms)
 library(DT)
@@ -12,23 +14,57 @@ shinyServer(function(input, output) {
     # data input
     dartfilter <- reactive({
         if (!is.null(input$filedart2)){
-            re <- xcms::xcmsRaw(input$filedart2$datapath[1],profstep = as.numeric(input$step))
-            MZ <- xcms::profMz(re)
-            value <- NULL
-            for(i in input$filedart2$datapath){
-                data <- xcms::xcmsRaw(i,profstep = as.numeric(input$step))
-                pf <- xcms::profMat(data)
-                rownames(pf) <- mz <- xcms::profMz(data)
-                colnames(pf) <- rt <- data@scantime
-                mzins <- apply(pf,1,sum)/length(unique(rt))
-                MZ0 <- MZ
-                MZ <- intersect(MZ,mz)
-                value <- cbind(value[MZ0 %in% MZ,], mzins[mz %in% MZ])
+            if(grepl('zip',input$filedart2$name)){
+
+                value <- NULL
+                n <- 1
+                MZ <- NULL
+                for(i in input$filedart2$datapath){
+                    file <- unzip(i)
+                    re <- xcms::xcmsRaw(file[1],profstep = as.numeric(input$step))
+                    if(is.null(MZ)){
+                        MZ <- xcms::profMz(re)
+                    }else{
+                        MZ <- intersect(MZ,xcms::profMz(re))
+                    }
+                    cvalue <- colnames(value)
+                    for(j in file){
+                        data <- xcms::xcmsRaw(j,profstep = as.numeric(input$step))
+                        pf <- xcms::profMat(data)
+                        rownames(pf) <- mz <- xcms::profMz(data)
+                        colnames(pf) <- rt <- data@scantime
+                        mzins <- apply(pf,1,sum)/length(unique(rt))
+                        MZ0 <- MZ
+                        MZ <- intersect(MZ,mz)
+
+                        value <- cbind(value[MZ0 %in% MZ,], mzins[mz %in% MZ])
+                    }
+                    value <- value[apply(value, 1, function(x) !all(x==0)),]
+                    value <- value[apply(value, 1, function(x) all(x>=10^(input$insdart))),]
+                    colnames(value) <- c(cvalue,rep(input$filedart2$name[n],length(file)))
+                    n <- n+1
+                    MZ <- as.numeric(rownames(value))
+                }
+                return(value)
+            }else{
+                re <- xcms::xcmsRaw(input$filedart2$datapath[1],profstep = as.numeric(input$step))
+                MZ <- xcms::profMz(re)
+                value <- NULL
+                for(i in input$filedart2$datapath){
+                    data <- xcms::xcmsRaw(i,profstep = as.numeric(input$step))
+                    pf <- xcms::profMat(data)
+                    rownames(pf) <- mz <- xcms::profMz(data)
+                    colnames(pf) <- rt <- data@scantime
+                    mzins <- apply(pf,1,sum)/length(unique(rt))
+                    MZ0 <- MZ
+                    MZ <- intersect(MZ,mz)
+                    value <- cbind(value[MZ0 %in% MZ,], mzins[mz %in% MZ])
+                }
+                value <- value[apply(value, 1, function(x) !all(x==0)),]
+                value <- value[apply(value, 1, function(x) all(x>=10^(input$insdart))),]
+                colnames(value) <- input$filedart2$name
+                return(value)
             }
-            value <- value[apply(value, 1, function(x) !all(x==0)),]
-            value <- value[apply(value, 1, function(x) all(x>=10^(input$insdart))),]
-            colnames(value) <- input$filedart2$name
-            return(value)
         }else{
             return(NULL)
         }

@@ -21,7 +21,7 @@ shinyUI(
                                             'filedart2',
                                             label = 'mzXML files',
                                             multiple = T,
-                                            accept = c('.mzXML')
+                                            accept = c('.mzXML','.zip')
                                         ),
                                         h4('Data filter'),
                                         sliderInput(
@@ -29,10 +29,10 @@ shinyUI(
                                                 "Intensity in Log scale",
                                                 min = 0,
                                                 max = 10,
-                                                value = 3,
+                                                value = 4.2,
                                                 step = 0.2
                                         ),
-                                        selectInput('step','Profile step for mass spectrum',c(1,0.1,0.01,0.001),selected = '0.1') ),
+                                        selectInput('step','Profile step for mass spectrum',c(1,0.1,0.01,0.001),selected = '1') ),
                                 mainPanel(
                                         h3("DART visulization"),
                                         h4("Prepare the data"),
