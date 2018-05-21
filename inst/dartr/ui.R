@@ -29,7 +29,7 @@ shinyUI(
                                                 "Intensity in Log scale",
                                                 min = 0,
                                                 max = 10,
-                                                value = 4.2,
+                                                value = 2,
                                                 step = 0.2
                                         ),
                                         selectInput('step','Profile step for mass spectrum',c(1,0.1,0.01,0.001),selected = '1') ),

@@ -63,7 +63,7 @@ shinyServer(function(input, output) {
                     value <- cbind(value[MZ0 %in% MZ,], mzins[mz %in% MZ])
                 }
                 value <- value[apply(value, 1, function(x) !all(x==0)),]
-                value <- value[apply(value, 1, function(x) all(x>=10^(input$insdart))),]
+                value <- value[apply(value, 1, function(x) any(x>=10^(input$insdart))),]
                 colnames(value) <- sub('.mzXML','',input$filedart2$name)
                 group <- gsub('([0-9]|_)','',colnames(value))
                 return(list(group = group, data = value))
